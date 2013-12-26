@@ -9,29 +9,29 @@ import sys
 import urllib
 import os
 
-def die(why):
-    print 'UNI -- error: ' + why + ' Type "cat help" for more help.'
-    sys.exit()
+class PluginNotFoundError(Exception):
+    pass
 
-def justdie(): sys.exit()
+class InvalidPluginError(Exception):
+    pass
 
-def qget(url):
-    return urllib.urlopen(url).read()
+class ConversionNotSupportedError(Exception):
+    pass
 
-def qwrite(where,what):
-    with open(where,'w') as where:
-        where.write(what)
+def filterFiles(extension, path=os.getcwd()):
+    for file_ in os.listdir(path):
+        if file_.endswith(extension): yield file_
 
 class Plugin():
     
     def __init__(self, plugin):
         plugin = 'plugins' + os.sep + plugin
-        self.contents = json.load(open(plugin))
+
         try:
             self.contents = json.load(open(plugin))
         except IOError:
-            print 'Plugin "{}" not found.'.format(plugin)
-            justdie()
+            message = 'plugin "{}" not found.'.format(plugin)
+            raise PluginNotFoundError(message)
         
         try:
             self.name = self.contents['name']
@@ -40,15 +40,15 @@ class Plugin():
             self.encoders = self.contents['outputs']
             self.outputs = self.encoders.keys()
         except KeyError:
-            print 'Plugin "{}" is corrupt/invalid. Retry with a clean copy.'.format(plugin)
-            justdie()
+            message = 'plugin "{}" invalid.'.format(plugin)
+            raise InvalidPluginError(message)
         
     def convertTo(self, output):
         try:
             return self.encoders[output]
         except KeyError:
-            print 'Conversion "{}" => "{}" not implemented.'.format(self.name,output)
-            justdie()
+            message = 'conversion "{}" => "{}" not implemented.'.format(self.name,output)
+            raise ConversionNotSupportedError(message)
 
 class Mediafile():
     
