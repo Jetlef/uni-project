@@ -9,62 +9,37 @@ import sys
 import urllib
 import os
 
-class PluginNotFoundError(Exception):
-    pass
+class PluginNotFoundError(Exception): pass
 
-class InvalidPluginError(Exception):
-    pass
-
-class ConversionNotSupportedError(Exception):
-    pass
+class ConversionNotSupportedError(Exception): pass
 
 def filterFiles(extension, path=os.getcwd()):
     for file_ in os.listdir(path):
         if file_.endswith(extension): yield file_
 
-class Plugin():
+class Encoder():
     
-    def __init__(self, plugin):
-        plugin = 'plugins' + os.sep + plugin
-
+    def __init__(self, inputfile, outputformat):
+        self.inputfile = inputfile
+        self.outputformat = outputformat
+        self.barename, extension = inputfile.rsplit('.',1)
+        
         try:
-            self.contents = json.load(open(plugin))
+            pluginpath = 'plugins' + os.sep + extension + '.json'
+            plugin = json.load(open(pluginpath))
         except IOError:
-            message = 'plugin "{}" not found.'.format(plugin)
-            raise PluginNotFoundError(message)
+            raise PluginNotFoundError(pluginpath)
         
         try:
-            self.name = self.contents['name']
-            self.author = self.contents['author']
-            self.version = self.contents['version']
-            self.encoders = self.contents['outputs']
-            self.outputs = self.encoders.keys()
+            self.steps = []
+            for step in plugin['outputs'][outputformat]:
+                step = step.replace('<file>',self.barename)
+                step = step.replace('|','"')
+                self.steps.append(step)
         except KeyError:
-            message = 'plugin "{}" invalid.'.format(plugin)
-            raise InvalidPluginError(message)
-        
-    def convertTo(self, output):
-        try:
-            return self.encoders[output]
-        except KeyError:
-            message = 'conversion "{}" => "{}" not implemented.'.format(self.name,output)
+            message = '{} to {}'.format(extension,outputformat)
             raise ConversionNotSupportedError(message)
 
-class Mediafile():
-    
-    def __init__(self, mediafile):
-        self.mediafile = mediafile
-        
-        # Split <file_name> in two parts: the extensionless <file_name>, and its extension.
-        p = mediafile.rfind('.') + 1
-        self.name, self.extension = mediafile[:p-1], mediafile[p:]
-        
-        # Find the appropriate plugin.
-        self.plugin = Plugin(self.extension + '.json')
-    
-    def steps(self, output):
-        for instruction in self.plugin.convertTo(output):
-            yield instruction.replace('<file>',self.name).replace('|','"')
-    
-    def encode(self, output):
-        [os.system(step) for step in self.steps(output)]
+    def encode(self):
+        [os.system(step) for step in self.steps]
+        return self.inputfile, '{}.{}'.format(self.barename,self.outputformat)
