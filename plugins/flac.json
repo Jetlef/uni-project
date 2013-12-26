@@ -1,0 +1,13 @@
+{
+    "name": "flac",
+    "author": "Luca J. Pears",
+    "version": "1.0",
+    "requirements": {
+        "flac": "http://xiph.org/flac/download.html",
+        "lame": "http://lame.sourceforge.net/links.php#Binaries"
+    },
+    "outputs": {
+        "wav": ["flac -d -s -f |<file>.flac|"],
+        "mp3": ["flac -d -s -f |<file>.flac|", "lame |<file>.wav| |<file>.mp3| -V0 -q0 --quiet"]
+    }
+}
