@@ -1,0 +1,11 @@
+{
+    "author": "Luca J. Pears",
+    "version": "1.0",
+    "requirements": {
+        "ffmpeg": ""
+    },
+    "outputs": {
+        "m4a": ["plugins#ffmpeg -i |<file>.mp4| -vn -acodec copy -y -loglevel quiet |<file>.m4a|"],
+        "mp3": ["plugins#ffmpeg -i |<file>.mp4| -y -loglevel quiet |<file>.wav|", "plugins#lame |<file>.wav| |<file>.mp3| -V0 -q0 --quiet"]
+    }
+}

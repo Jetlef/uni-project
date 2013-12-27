@@ -38,6 +38,11 @@ class Encoder():
             for step in plugin['outputs'][outputformat]:
                 step = step.replace('<file>',self.barename)
                 step = step.replace('|','"')
+                step = step.replace('#',os.sep)
+                program = step.split()[0]
+                if not os.path.isfile(program):
+                    raise PluginNotFoundError(program)
+                
                 self.steps.append(step)
         except KeyError:
             message = '{} to {}'.format(extension,outputformat)

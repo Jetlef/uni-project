@@ -6,7 +6,7 @@
         "lame": "http://lame.sourceforge.net/links.php#Binaries"
     },
     "outputs": {
-        "wav": ["flac -d -s -f |<file>.flac|"],
-        "mp3": ["flac -d -s -f |<file>.flac|", "lame |<file>.wav| |<file>.mp3| -V0 -q0 --quiet"]
+        "wav": ["plugins#flac -d -s -f |<file>.flac|"],
+        "mp3": ["plugins#flac -d -s -f |<file>.flac|", "plugins#lame |<file>.wav| |<file>.mp3| -V0 -q0 --quiet"]
     }
 }
